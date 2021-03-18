@@ -112,6 +112,7 @@ from: debian:buster-20201012
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("cowplot", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("patchwork", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggsci", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggpubr", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggthemes", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("argparse", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("pander", repos="http://cran.r-project.org")'
@@ -119,16 +120,20 @@ from: debian:buster-20201012
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinydashboard", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinythemes", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinyjs", repos="http://cran.r-project.org")'
-    
-    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("cboettig/knitcitations")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'remotes::install_github("rstudio/DT")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("rstudio/bookdown")'
-    
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("reticulate", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("enrichR", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("future", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("Matrix", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("glmGamPoi", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("kableExtra", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("sessioninfo", repos="http://cran.r-project.org")'
+        
     # Bioconductor packages
     /opt/R/${R_VERSION}/bin/R --slave -e 'if (!requireNamespace("BiocManager",quietly=TRUE)) install.packages("BiocManager", repos="http://cran.r-project.org")'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install(ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("biomaRt",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("DESeq2",ask=FALSE)'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("MAST",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("edgeR",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("BiocParallel",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("IHW",ask=FALSE)'
@@ -138,6 +143,13 @@ from: debian:buster-20201012
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Mm.eg.db",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Hs.eg.db",ask=FALSE)'
     /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Dr.eg.db",ask=FALSE)'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("romanhaa/cerebroApp",ask=FALSE)'
+
+    # dev packages
+    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("cboettig/knitcitations")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'remotes::install_github("rstudio/DT")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("rstudio/bookdown")'
+    /opt/R/${R_VERSION}/bin/R --slave -e 'remotes::install_github(repo = "satijalab/seurat", ref = "develop")'
     
 
     ###########
