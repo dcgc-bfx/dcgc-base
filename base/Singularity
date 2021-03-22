@@ -56,8 +56,13 @@ from: debian:buster-20201012
 %post
     set -eu
     
+    # the linux command 'make' supports the compilation of independent targets in parallel; this is also passed to R 'install.packages' since it uses 'make' internally
+    COMPILE_CPUS=4
+    
+    # so that apt-get can be run non-interactively
     export DEBIAN_FRONTEND=noninteractive
     
+    # install basic system tools and libs
     apt-get clean && apt-get update -y && apt-get upgrade -y
     apt-get install -y build-essential gnupg2 software-properties-common  wget tar curl bzip2 libncurses-dev zlib1g-dev libbz2-dev liblzma-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev libtbb-dev zip unzip perl-base default-jre parallel pigz zlibc libc6 gcc g++ gfortran git coreutils pandoc gdebi-core pkg-config autoconf uuid libx11-dev libxt-dev libpcre2-dev libcurl4-openssl-dev libxml2-dev texinfo texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra libjpeg-dev libpng-dev libtiff-dev xfonts-75dpi xfonts-100dpi xfonts-traditional xfstt libcairo2-dev libpangocairo-1.0-0 vim pdftk
     apt-get clean
@@ -79,78 +84,35 @@ from: debian:buster-20201012
     tar -zxf R-${R_VERSION}.tar.gz  && \
     cd R-${R_VERSION} && \
     ./configure --prefix=/opt/R/${R_VERSION} --enable-memory-profiling --enable-R-shlib --with-blas --with-lapack --with-readline --with-pcre2 --with-tcltk --with-cairo --with-libpng --with-jpeglib --with-libtiff && \
-    make && \
+    make -j $COMPILE_CPUS -k && \
     make install && \
     ln -s /opt/R/${R_VERSION}/bin/R /opt/bin/R && \
     ln -s /opt/R/${R_VERSION}/bin/Rscript /opt/bin/Rscript && \
     cd /opt && \
     rm -r R-${R_VERSION}.tar.gz R-${R_VERSION}
     
-    
 
     # CRAN packages
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("tidyverse", repos="http://cran.r-project.org")'
+	# --no-init-file prevents R from loading user settings since all should be independent from the user
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'install.packages("tidyverse", repos="http://cran.r-project.org", Ncpus='"$COMPILE_CPUS"')'
     ## tidyverse contains:  broom,cli,crayon,dbplyr,dplyr,forcats,ggplot2,haven,hms,httr,jsonlite,lubridate,magrittr,modelr,pillar,purrr,readr,readxl,reprex,rlang,rstudioapi,rvest,stringr,tibble,tidyr,xml2,tidyverse
     
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("reshape2", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("plyr", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("scales", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("gridExtra", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggrepel", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("data.table", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("R.utils", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("openxlsx", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("WriteXLS", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("hwriter", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("factoextra", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("pheatmap", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("RColorBrewer", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("PoiClaClu", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("knitr", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("devtools", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("remotes", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("cowplot", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("patchwork", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggsci", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggpubr", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("ggthemes", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("argparse", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("pander", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shiny", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinydashboard", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinythemes", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("shinyjs", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("reticulate", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("enrichR", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("future", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("Matrix", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("glmGamPoi", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("kableExtra", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'install.packages("sessioninfo", repos="http://cran.r-project.org")'
-        
-    # Bioconductor packages
-    /opt/R/${R_VERSION}/bin/R --slave -e 'if (!requireNamespace("BiocManager",quietly=TRUE)) install.packages("BiocManager", repos="http://cran.r-project.org")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install(ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("biomaRt",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("DESeq2",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("MAST",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("edgeR",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("BiocParallel",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("IHW",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("clusterProfiler",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("ReportingTools",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("genefilter",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Mm.eg.db",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Hs.eg.db",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("org.Dr.eg.db",ask=FALSE)'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'BiocManager::install("romanhaa/cerebroApp",ask=FALSE)'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'install.packages(c("reshape2","plyr","scales","gridExtra","ggrepel","data.table","R.utils","openxlsx","WriteXLS","hwriter","factoextra","pheatmap","RColorBrewer","PoiClaClu","knitr","devtools","remotes","cowplot","patchwork","ggsci","ggpubr","ggthemes","argparse","pander","shiny","shinydashboard","shinythemes","shinyjs","reticulate","enrichR","future","Matrix","glmGamPoi","kableExtra","sessioninfo"), repos="http://cran.r-project.org", Ncpus='"$COMPILE_CPUS"')'
 
-    # dev packages
-    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("cboettig/knitcitations")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'remotes::install_github("rstudio/DT")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'devtools::install_github("rstudio/bookdown")'
-    /opt/R/${R_VERSION}/bin/R --slave -e 'remotes::install_github(repo = "satijalab/seurat", ref = "develop")'
+    # Bioconductor packages
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'if (!requireNamespace("BiocManager",quietly=TRUE)) install.packages("BiocManager", repos="http://cran.r-project.org")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'BiocManager::install(ask=FALSE)'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'BiocManager::install(c("biomaRt","DESeq2","MAST","edgeR","BiocParallel","IHW","clusterProfiler","ReportingTools","genefilter","org.Mm.eg.db","org.Hs.eg.db","org.Dr.eg.db", "LoomExperiment", "SingleCellExperiment"), ask=FALSE, Ncpus='"$COMPILE_CPUS"')'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'BiocManager::install("romanhaa/cerebroApp",ask=FALSE, Ncpus='"$COMPILE_CPUS"')'
     
+    # github/dev packages
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');remotes::install_github(repo = "satijalab/seurat", ref = "develop")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');remotes::install_github("chris-mcginnis-ucsf/DoubletFinder")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');devtools::install_github("cellgeni/sceasy")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');devtools::install_github("cboettig/knitcitations")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');remotes::install_github("rstudio/DT")'
+    /opt/R/${R_VERSION}/bin/R --no-init-file --slave -e 'options(Ncpus='"$COMPILE_CPUS"');devtools::install_github("rstudio/bookdown")'
+
 
     ###########
     # RStudio #
@@ -178,6 +140,22 @@ from: debian:buster-20201012
     conda update conda
     conda install -c conda-forge mamba
     
+    mamba install --quiet --yes -c conda-forge -c bioconda \
+    snakemake \
+    multiqc \
+    anndata \
+    anndata2ri \
+    scipy \
+    scanpy \
+    scikit-learn \
+    python-igraph \
+    pandas \
+    pip \
+    h5py \
+    leidenalg
+    
+    mamba clean -ai
+    
     ###########
     # subread #
     ###########
@@ -188,7 +166,7 @@ from: debian:buster-20201012
     cd /opt && wget -O ${SUBREAD_DIR}-source.tar.gz -nv https://sourceforge.net/projects/subread/files/subread-${SUBREAD_VERSION}/subread-${SUBREAD_VERSION}-source.tar.gz/download && \
     tar -zxf ${SUBREAD_DIR}-source.tar.gz && \
     cd ${SUBREAD_DIR}-source/src && \
-    make -f Makefile.Linux && \
+    make -j $COMPILE_CPUS -k -f Makefile.Linux && \
     cd /opt && cp ${SUBREAD_DIR}-source/bin/* ${SUBREAD_DIR}-source/bin/utilities/* /opt/bin && \
     rm -rf ${SUBREAD_DIR}-source ${SUBREAD_DIR}-source.tar.gz 
     
@@ -203,7 +181,7 @@ from: debian:buster-20201012
         tar -jxf ${HTSLIB_DIR}.tar.bz2 && \
         cd ${HTSLIB_DIR} && \
         ./configure --prefix=/opt && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         make install && \
         cd /opt && rm -r ${HTSLIB_DIR}.tar.bz2 ${HTSLIB_DIR}
     
@@ -218,7 +196,7 @@ from: debian:buster-20201012
         tar -jxf ${SAMTOOLS_DIR}.tar.bz2 && \
         cd ${SAMTOOLS_DIR} && \
         ./configure --prefix=/opt --with-htslib=/opt/ && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         make install && \
         cd /opt && rm -r ${SAMTOOLS_DIR}.tar.bz2 ${SAMTOOLS_DIR}
 
@@ -233,7 +211,7 @@ from: debian:buster-20201012
         tar -jxf ${BCFTOOLS_DIR}.tar.bz2 && \
         cd ${BCFTOOLS_DIR} && \
         ./configure --prefix=/opt --with-htslib=/opt/ && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         make install && \
         cd /opt && rm -r ${BCFTOOLS_DIR}.tar.bz2 ${BCFTOOLS_DIR}
 
@@ -248,7 +226,7 @@ from: debian:buster-20201012
         tar -zxf bedtools-${BEDTOOLS_VERSION}.tar.gz && \
         mv bedtools2 ${BEDTOOLS_DIR} && \
         cd ${BEDTOOLS_DIR} && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         mv bin/* /opt/bin && \
         cd /opt && rm -r bedtools-${BEDTOOLS_VERSION}.tar.gz ${BEDTOOLS_DIR}
         
@@ -262,7 +240,7 @@ from: debian:buster-20201012
     cd /opt && wget -O ${BWA_DIR}.tar.gz -nv https://github.com/lh3/bwa/archive/v${BWA_VERSION}.tar.gz && \
         tar -zxf ${BWA_DIR}.tar.gz && \
         cd ${BWA_DIR} && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         mv bwa /opt/bin && \
         cd /opt && rm -r ${BWA_DIR}.tar.gz ${BWA_DIR}
 
@@ -276,7 +254,7 @@ from: debian:buster-20201012
     cd /opt && wget -O ${BOWTIE1_DIR}.tar.gz -nv https://github.com/BenLangmead/bowtie/archive/v${BOWTIE1_VERSION}.tar.gz && \
         tar -zxf ${BOWTIE1_DIR}.tar.gz && \
         cd ${BOWTIE1_DIR} && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         mv bowtie-build-s bowtie-build-l bowtie-align-s bowtie-align-l bowtie-inspect-s bowtie-inspect-l  bowtie-inspect bowtie-build bowtie /opt/bin && \
         cd /opt && rm -r ${BOWTIE1_DIR}.tar.gz ${BOWTIE1_DIR}
 
@@ -290,7 +268,7 @@ from: debian:buster-20201012
     cd /opt && wget -O ${BOWTIE2_DIR}.tar.gz -nv https://github.com/BenLangmead/bowtie2/archive/v${BOWTIE2_VERSION}.tar.gz && \
         tar -zxf ${BOWTIE2_DIR}.tar.gz && \
         cd ${BOWTIE2_DIR} && \
-        make && \
+        make -j $COMPILE_CPUS -k && \
         mv bowtie2  bowtie2-align-l  bowtie2-align-s  bowtie2-build  bowtie2-build-l  bowtie2-build-s  bowtie2-inspect  bowtie2-inspect-l	bowtie2-inspect-s /opt/bin && \
         cd /opt && rm -rf ${BOWTIE2_DIR}.tar.gz ${BOWTIE2_DIR}
 
@@ -304,7 +282,7 @@ from: debian:buster-20201012
     cd /opt && wget -O ${STAR_DIR}.tar.gz -nv https://github.com/alexdobin/STAR/archive/${STAR_VERSION}.tar.gz && \
         tar -zxf ${STAR_DIR}.tar.gz && \
         cd ${STAR_DIR}/source && \
-        make STAR && \
+        make -j $COMPILE_CPUS -k STAR && \
         cp STAR /opt/bin && \
         cd /opt && rm -r ${STAR_DIR}.tar.gz ${STAR_DIR}
 
@@ -367,7 +345,7 @@ from: debian:buster-20201012
     tar -xvf ${GSNAP_DIR}.tar.gz && \
     cd ${GSNAP_DIR} && \
     ./configure --prefix=/opt --disable-mmap && \
-    make && make install && \
+    make -j $COMPILE_CPUS -k && make install && \
     cd /opt && rm -rf ${GSNAP_DIR}.tar.gz ${GSNAP_DIR}
     
     #############
@@ -383,7 +361,7 @@ from: debian:buster-20201012
       cd /opt && unzip -p bcl2fastq.zip | tar -zxvf - --no-same-owner && \
       cd bcl2fastq && \
       src/configure --prefix=/opt/${BCL2FASTQ_DIR} && \
-      make && \
+      make -j $COMPILE_CPUS -k && \
       make install && \
       ln -sf /opt/${BCL2FASTQ_DIR}/bin/bcl2fastq /opt/bin/bcl2fastq && \
       cd /opt && rm -rf bcl2fastq bcl2fastq.zip
